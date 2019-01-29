@@ -1,5 +1,7 @@
 #Download base image ubuntu 18.04
 FROM ubuntu:18.04
+
+ENV DEBIAN_FRONTEND=noninteractive
  
 # Update Software repository
 RUN apt-get update
@@ -40,7 +42,9 @@ RUN apt-get install -yq --no-install-recommends \
     iputils-ping \
     locales \
     sqlite3 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/* 
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+ADD default /etc/nginx/sites-available/default 
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -50,29 +54,4 @@ RUN locale-gen en_US.UTF-8 en_GB.UTF-8 de_DE.UTF-8 es_ES.UTF-8 fr_FR.UTF-8 it_IT
 
 RUN a2enmod rewrite expires
 
-#Define the ENV variable
-ENV nginx_vhost /etc/nginx/sites-available/default
-ENV php_conf /etc/php/7.2/fpm/php.ini
-ENV nginx_conf /etc/nginx/nginx.conf
-ENV supervisor_conf /etc/supervisor/supervisord.conf
- 
-# Enable php-fpm on nginx virtualhost configuration
-COPY default ${nginx_vhost}
-RUN sed -i -e 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' ${php_conf} && \
-    echo "\ndaemon off;" >> ${nginx_conf}
- 
-#Copy supervisor configuration
-COPY supervisord.conf ${supervisor_conf}
- 
-RUN mkdir -p /run/php && \
-    chown -R www-data:www-data /var/www/html && \
-    chown -R www-data:www-data /run/php
- 
-# Volume configuration
-VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx", "/var/www/html"]
- 
-# Configure Services and Port
-COPY start.sh /start.sh
-CMD ["./start.sh"]
- 
-EXPOSE 80 443
+CMD ["nginx"] -D FOREGROUND
