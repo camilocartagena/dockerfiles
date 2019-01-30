@@ -56,4 +56,8 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 #RUN a2enmod rewrite expires
 
+# generate phpinfo
+COPY index.php /var/www/html/
+RUN rm -f /var/www/html/index.nginx-debian.html
+
 CMD ["nginx"] -D FOREGROUND
