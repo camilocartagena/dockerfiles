@@ -1,63 +1,57 @@
 #Download base image ubuntu 18.04
 FROM ubuntu:18.04
 
-ENV DEBIAN_FRONTEND=noninteractive
- 
-# Update Software repository
-RUN apt-get update
- 
-# Install all options
-RUN apt-get install -yq --no-install-recommends \
-    apt-utils \
-    curl \
-    # Install git
-    git \
-    # Install nginx
-    nginx \
-    # Install php 7.2
-    libapache2-mod-php7.2 \
-    php7.2-cli \
-    php7.2-json \
-    php7.2-curl \
-    php7.2-fpm \
-    php7.2-gd \
-    php7.2-ldap \
-    php7.2-mbstring \
-    php7.2-mysql \
-    php7.2-soap \
-    php7.2-sqlite3 \
-    php7.2-xml \
-    php7.2-zip \
-    php7.2-intl \
-    php-imagick \
-    # supervisor
-    supervisor \
-    # Install tools
-    openssl \
-    nano \
-    graphicsmagick \
-    imagemagick \
-    ghostscript \
-    mysql-client \
-    iputils-ping \
-    locales \
-    sqlite3 \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
-    && echo "daemon off;" >> /etc/nginx/nginx.conf
+MAINTAINER Camilo cartagena <camilocartagena@gmail.com>
+ENV DEBIAN_FRONTEND noninteractive
 
-ADD default /etc/nginx/sites-available/default 
+RUN apt update
+RUN apt list --upgradable
+RUN apt update
 
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+#Installing the Nginx Web Server
+RUN apt install nginx -y
 
-# Set locales
-#RUN locale-gen en_US.UTF-8 en_GB.UTF-8 de_DE.UTF-8 es_ES.UTF-8 fr_FR.UTF-8 it_IT.UTF-8 km_KH sv_SE.UTF-8 fi_FI.UTF-8
+#Installing PHP and Configuring Nginx to Use the PHP Processor
+RUN apt install php-fpm php-mysql -y
 
-#RUN a2enmod rewrite expires
+RUN apt install -y \
+  nano \
+  curl \
+  git \
+  wget \
+  iputils-ping \
+  zip \
+  unzip \
+  php-curl \
+  php-gd \
+  php-xml \
+  php-mbstring \
+  php-soap
 
-# generate phpinfo
-COPY index.php /var/www/html/
-RUN rm -f /var/www/html/index.nginx-debian.html
+RUN apt clean
 
-CMD ["nginx"] -D FOREGROUND
+# Install Composer.
+RUN curl -sS https://getcomposer.org/installer | php
+RUN mv composer.phar /usr/local/bin/composer
+
+# Install Drush via composer.
+RUN composer global require drush/drush:8
+
+# Configure composer bin path for drush inside container and from exec.
+RUN echo 'export PATH="$HOME/.composer/vendor/bin:$PATH"' >> /root/.bashrc
+ENV PATH /root/.composer/vendor/bin:$PATH
+
+COPY php-docker.ini /etc/php/7.2/fpm/php.ini
+COPY default-docker.conf /etc/nginx/sites-available/default
+RUN sed -i "s/user  nginx;/user  www-data;/g" /etc/nginx/nginx.conf
+
+RUN mkdir /var/run/php
+
+ADD run.sh /run.sh
+RUN chmod 755 /run.sh
+
+COPY index.php /var/www/html
+
+EXPOSE 80
+
+CMD ["/run.sh"]
