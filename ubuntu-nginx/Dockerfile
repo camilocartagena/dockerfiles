@@ -10,7 +10,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 RUN echo "Hello World" > /usr/share/nginx/html/index.html
 
-ENV "DEV"
+ENV ENV "DEV"
 
 ADD run.sh /run.sh
 
