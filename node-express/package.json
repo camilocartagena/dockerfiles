@@ -1,0 +1,16 @@
+{
+  "name": "nodejs-express-demo",
+  "version": "1.0.0",
+  "description": "nodejs express demo",
+  "author": "user demo <user@example.com>",
+  "license": "MIT",
+  "main": "index.js",
+  "keywords": [
+    "nodejs",
+    "express"
+  ],
+  "dependencies": {
+    "express": "^4.17.1",
+    "morgan": "^1.10.0"
+  }
+}
