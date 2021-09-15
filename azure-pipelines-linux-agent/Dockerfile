@@ -29,6 +29,20 @@ RUN apt-get install default-jdk -y
 
 RUN apt-get install openjdk-11-jdk
 
+### PYHTON3
+RUN apt-get  update
+RUN apt-get install software-properties-common -y
+RUN add-apt-repository ppa:deadsnakes/ppa -y
+RUN apt-get install  python3.7 -y
+
+# Set the locale in container
+RUN apt-get -y install locales
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
 ### AZURE AGENT
 RUN curl -LsS https://aka.ms/InstallAzureCLIDeb | bash \
   && rm -rf /var/lib/apt/lists/*
