@@ -1,0 +1,19 @@
+# Ignorar archivos de entorno con credenciales
+.env
+
+# Ignorar datos persistentes de MySQL
+mysql_data/
+*.sql
+
+# Ignorar archivos de logs
+*.log
+docker-logs/
+
+# Ignorar archivos temporales del sistema operativo y editores
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Ignorar imágenes y contenedores de Docker compilados
+docker-compose.override.yml
